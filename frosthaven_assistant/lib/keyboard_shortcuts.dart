@@ -7,27 +7,27 @@ class XhKeyboardShortcuts extends StatelessWidget {
   final Widget child;
   final void Function(XhElement e) onToggle;
   final VoidCallback? onToggleFullscreen; // NEW
+  final VoidCallback? onNextInInitiative;   // NEW
+  final VoidCallback? onPrevInInitiative;   // NEW
+  
 
   const XhKeyboardShortcuts({
     super.key,
     required this.child,
     required this.onToggle,
     this.onToggleFullscreen, // NEW
+    this.onNextInInitiative,                // NEW
+    this.onPrevInInitiative,                // NEW
+    
   });
 
   static final _digitToElem = <LogicalKeyboardKey, XhElement>{
-    LogicalKeyboardKey.digit1: XhElement.fire,
-    LogicalKeyboardKey.digit2: XhElement.ice,
-    LogicalKeyboardKey.digit3: XhElement.air,
-    LogicalKeyboardKey.digit4: XhElement.earth,
-    LogicalKeyboardKey.digit5: XhElement.light,
-    LogicalKeyboardKey.digit6: XhElement.dark,
-    LogicalKeyboardKey.numpad1: XhElement.fire,
-    LogicalKeyboardKey.numpad2: XhElement.ice,
-    LogicalKeyboardKey.numpad3: XhElement.air,
-    LogicalKeyboardKey.numpad4: XhElement.earth,
-    LogicalKeyboardKey.numpad5: XhElement.light,
-    LogicalKeyboardKey.numpad6: XhElement.dark,
+    LogicalKeyboardKey.f1: XhElement.fire,
+    LogicalKeyboardKey.f2: XhElement.ice,
+    LogicalKeyboardKey.f3: XhElement.air,
+    LogicalKeyboardKey.f4: XhElement.earth,
+    LogicalKeyboardKey.f5: XhElement.light,
+    LogicalKeyboardKey.f6: XhElement.dark,
   };
 
   @override
@@ -42,7 +42,18 @@ class XhKeyboardShortcuts extends StatelessWidget {
           onToggleFullscreen?.call();
           return KeyEventResult.handled;
         }
-
+        // TAB / Shift+TAB for initiative navigation
+        if (event.logicalKey == LogicalKeyboardKey.tab) {
+          final keys = HardwareKeyboard.instance.logicalKeysPressed;
+          final isShift = keys.contains(LogicalKeyboardKey.shiftLeft) ||
+                          keys.contains(LogicalKeyboardKey.shiftRight);
+          if (isShift) {
+            onPrevInInitiative?.call();
+          } else {
+            onNextInInitiative?.call();
+          }
+          return KeyEventResult.handled;
+        }
         // Element toggle 1..6
         final elem = _digitToElem[event.logicalKey];
         if (elem == null) return KeyEventResult.ignored;

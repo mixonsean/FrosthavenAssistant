@@ -103,6 +103,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeSwitcher.of(context).themeData,
       home: XhKeyboardShortcuts(
   onToggle: _kbToggleElement,
+  onNextInInitiative: _kbNextInInitiative,   // NEW
+  onPrevInInitiative: _kbPrevInInitiative,   // optional
    onToggleFullscreen: () async {
     final isFs = await windowManager.isFullScreen();
     await getIt<Settings>().setFullscreen(!isFs); // <-- call via getIt
@@ -137,6 +139,15 @@ void _kbToggleElement(XhElement e) {
     // currently inert → set to FULL
     _kbGameState.action(ImbueElementCommand(elem, false));
   }
+}
+void _kbNextInInitiative() {
+  // TEMP: we’ll replace with the real command
+  debugPrint('[KB] next in initiative');
+}
+
+void _kbPrevInInitiative() {
+  // TEMP: we’ll replace with the real command
+  debugPrint('[KB] prev in initiative');
 }
 
 
