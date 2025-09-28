@@ -16,6 +16,10 @@ import 'commands/load_character_save_command.dart';
 import 'commands/load_save_command.dart';
 import 'enums.dart';
 
+import 'package:frosthaven_assistant/utils/fullscreen_helper.dart';
+import 'dart:io' show Platform;
+
+
 class Settings {
   final userScalingMainList = ValueNotifier<double>(1.0);
   final userScalingBars = ValueNotifier<double>(
@@ -121,34 +125,30 @@ class Settings {
   }
 
   Future<void> setFullscreen(bool fullscreen) async {
-    fullScreen.value = fullscreen;
-    //to set fullscreen on pc - need to add exit button to quit //would be good to exit/enter mode with ctrl+enter
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      WidgetsFlutterBinding.ensureInitialized();
-      windowManager.ensureInitialized();
+  fullScreen.value = fullscreen;
 
-      // Use it only after calling `hiddenWindowAtLaunch`
-      windowManager.waitUntilReadyToShow().then((_) async {
-        // Hide window title bar
-        if (fullscreen) {
-          await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
-          await windowManager.setFullScreen(true);
-          await windowManager.center();
-          await windowManager.show();
-          await windowManager.setSkipTaskbar(false);
-          await windowManager
-              .setPosition(const Offset(0, 0)); //weird this was needed
-          await windowManager.show();
-        } else {
-          await windowManager.setTitleBarStyle(TitleBarStyle.normal);
-          await windowManager.setFullScreen(false);
-          await windowManager.center();
-          await windowManager.show();
-          await windowManager.setSkipTaskbar(false);
-          await windowManager.focus();
-          await windowManager.setAlwaysOnTop(false);
-        }
-      });
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    // We already ensured initialization in main(), but wait for the window anyway
+    await windowManager.waitUntilReadyToShow();
+
+    if (fullscreen) {
+      await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+      // Key change: move to the monitor the window is on, then fullscreen
+      await FullscreenHelper.enterOnCurrentDisplay();
+
+      await windowManager.show();
+      await windowManager.setSkipTaskbar(false);
+      // DO NOT call center() or setPosition(Offset.zero) here—those shove you to primary
+    } else {
+      await FullscreenHelper.exitAndRestore();
+      await windowManager.setTitleBarStyle(TitleBarStyle.normal);
+      await windowManager.show();
+      await windowManager.setSkipTaskbar(false);
+      await windowManager.focus();
+      await windowManager.setAlwaysOnTop(false);
+    }
+    return;
+
     } else {
       //android:
       //to hide ui top and bottom on android

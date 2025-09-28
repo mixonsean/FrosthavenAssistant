@@ -66,6 +66,8 @@ dependencies:
   format: ^1.4.0
   frosthaven_assistant_server:
     path: ../frosthaven_assistant_server
+  screen_retriever: ^0.2.0
+
 
 dev_dependencies:
   flutter_test:
