@@ -156,7 +156,7 @@ abstract class GameServer {
           // gracefully when the device is locked.
           if (error is SocketException &&
               (error.osError?.errorCode == 103 ||
-                  !leftOverMessage.isEmpty)) {
+                  leftOverMessage.isNotEmpty)) {
             stopServer(error.toString());
           }
         },

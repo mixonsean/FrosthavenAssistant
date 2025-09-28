@@ -14,6 +14,11 @@ import 'package:window_size/window_size.dart';
 import 'Resource/game_data.dart';
 import 'Resource/theme_switcher.dart';
 
+import 'keyboard_shortcuts.dart';
+import 'Resource/enums.dart' as fh;
+import 'Resource/commands/imbue_element_command.dart';
+import 'Resource/commands/use_element_command.dart';
+
 const title = 'X-haven Assistant';
 
 void _enablePlatformOverrideForDesktop() {
@@ -94,10 +99,40 @@ class MyApp extends StatelessWidget {
       showPerformanceOverlay: false,
       title: title,
       theme: ThemeSwitcher.of(context).themeData,
-      home: const MyHomePage(title: title),
+      home: XhKeyboardShortcuts(
+        onToggle: _kbToggleElement,
+        child: const MyHomePage(title: title),
+),
+
+
+
     );
   }
 }
+final GameState _kbGameState = getIt<GameState>();
+
+fh.Elements _toRepo(XhElement e) => switch (e) {
+  XhElement.fire  => fh.Elements.fire,
+  XhElement.ice   => fh.Elements.ice,
+  XhElement.air   => fh.Elements.air,
+  XhElement.earth => fh.Elements.earth,
+  XhElement.light => fh.Elements.light,
+  XhElement.dark  => fh.Elements.dark,
+};
+
+void _kbToggleElement(XhElement e) {
+  final elem = _toRepo(e);
+  final current = _kbGameState.elementState[elem];
+
+  if (current == fh.ElementState.full || current == fh.ElementState.half) {
+    // currently active → clear to NONE
+    _kbGameState.action(UseElementCommand(elem));
+  } else {
+    // currently inert → set to FULL
+    _kbGameState.action(ImbueElementCommand(elem, false));
+  }
+}
+
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});

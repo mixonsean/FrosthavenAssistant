@@ -67,8 +67,6 @@ dependencies:
   frosthaven_assistant_server:
     path: ../frosthaven_assistant_server
 
-
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

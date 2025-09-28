@@ -15,7 +15,7 @@ class ServerState {
       //gameSaveStates[commandIndex + 1].saveToDisk(this);
       //send last game state if connected
       print('server sends, redo index: $commandIndex, description:${commandDescriptions[commandIndex]}');
-      return "Index:${commandIndex}Description:${commandDescriptions[commandIndex]}GameState:${gameSaveStates[commandIndex + 1]!.getState()}";
+      return "Index:${commandIndex}Description:${commandDescriptions[commandIndex]}GameState:${gameSaveStates[commandIndex + 1].getState()}";
     }
     return "";
   }
@@ -30,7 +30,7 @@ class ServerState {
       //should send a special undo message? yes
       commandIndex--;
       if (commandIndex >= 0){
-        return "Index:${commandIndex}Description:${commandDescriptions[commandIndex]}GameState:${gameSaveStates[commandIndex]!.getState()}";
+        return "Index:${commandIndex}Description:${commandDescriptions[commandIndex]}GameState:${gameSaveStates[commandIndex].getState()}";
       } else {
         commandIndex = 0;
         return "";
