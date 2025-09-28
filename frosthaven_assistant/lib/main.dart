@@ -18,6 +18,7 @@ import 'keyboard_shortcuts.dart';
 import 'Resource/enums.dart' as fh;
 import 'Resource/commands/imbue_element_command.dart';
 import 'Resource/commands/use_element_command.dart';
+import 'package:flutter/widgets.dart';
 
 const title = 'X-haven Assistant';
 
@@ -27,8 +28,9 @@ void _enablePlatformOverrideForDesktop() {
   }
 }
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
   setupGetIt();
 
   _enablePlatformOverrideForDesktop();
@@ -100,8 +102,12 @@ class MyApp extends StatelessWidget {
       title: title,
       theme: ThemeSwitcher.of(context).themeData,
       home: XhKeyboardShortcuts(
-        onToggle: _kbToggleElement,
-        child: const MyHomePage(title: title),
+  onToggle: _kbToggleElement,
+   onToggleFullscreen: () async {
+    final isFs = await windowManager.isFullScreen();
+    await getIt<Settings>().setFullscreen(!isFs); // <-- call via getIt
+  },
+  child: const MyHomePage(title: title),
 ),
 
 
