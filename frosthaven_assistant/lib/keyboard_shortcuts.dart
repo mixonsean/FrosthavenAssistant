@@ -3,23 +3,28 @@ import 'package:flutter/widgets.dart';
 
 enum XhElement { fire, ice, air, earth, light, dark }
 
-class XhKeyboardShortcuts extends StatelessWidget {
+class XhKeyboardShortcuts extends StatefulWidget {
   final Widget child;
   final void Function(XhElement e) onToggle;
-  final VoidCallback? onToggleFullscreen; // NEW
-  final VoidCallback? onNextInInitiative;   // NEW
-  final VoidCallback? onPrevInInitiative;   // NEW
-  
+  final VoidCallback? onToggleFullscreen;
+  final VoidCallback? onNextInInitiative;
+  final VoidCallback? onPrevInInitiative;
 
   const XhKeyboardShortcuts({
     super.key,
     required this.child,
     required this.onToggle,
-    this.onToggleFullscreen, // NEW
-    this.onNextInInitiative,                // NEW
-    this.onPrevInInitiative,                // NEW
-    
+    this.onToggleFullscreen,
+    this.onNextInInitiative,
+    this.onPrevInInitiative,
   });
+
+  @override
+  State<XhKeyboardShortcuts> createState() => _XhKeyboardShortcutsState();
+}
+
+class _XhKeyboardShortcutsState extends State<XhKeyboardShortcuts> {
+  late final FocusNode _focusNode;
 
   static final _digitToElem = <LogicalKeyboardKey, XhElement>{
     LogicalKeyboardKey.f1: XhElement.fire,
@@ -31,37 +36,68 @@ class XhKeyboardShortcuts extends StatelessWidget {
   };
 
   @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    // Request focus immediately
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _ensureFocus() {
+    if (!_focusNode.hasFocus) {
+      _focusNode.requestFocus();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Focus(
-      autofocus: true,
-      onKeyEvent: (node, event) {
-        if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    return GestureDetector(
+      onTap: _ensureFocus,
+      behavior: HitTestBehavior.translucent,
+      child: Focus(
+        focusNode: _focusNode,
+        autofocus: true,
+        onKeyEvent: (node, event) {
+          if (event is! KeyDownEvent) return KeyEventResult.ignored;
 
-        // F11 fullscreen toggle
-        if (event.logicalKey == LogicalKeyboardKey.f11) {
-          onToggleFullscreen?.call();
-          return KeyEventResult.handled;
-        }
-        // TAB / Shift+TAB for initiative navigation
-        if (event.logicalKey == LogicalKeyboardKey.tab) {
-          final keys = HardwareKeyboard.instance.logicalKeysPressed;
-          final isShift = keys.contains(LogicalKeyboardKey.shiftLeft) ||
-                          keys.contains(LogicalKeyboardKey.shiftRight);
-          if (isShift) {
-            onPrevInInitiative?.call();
-          } else {
-            onNextInInitiative?.call();
+          // F11 fullscreen toggle
+          if (event.logicalKey == LogicalKeyboardKey.f11) {
+            widget.onToggleFullscreen?.call();
+            // Re-request focus after fullscreen toggle
+            Future.delayed(const Duration(milliseconds: 100), _ensureFocus);
+            return KeyEventResult.handled;
           }
-          return KeyEventResult.handled;
-        }
-        // Element toggle 1..6
-        final elem = _digitToElem[event.logicalKey];
-        if (elem == null) return KeyEventResult.ignored;
 
-        onToggle(elem);
-        return KeyEventResult.handled;
-      },
-      child: child,
+          // TAB / Shift+TAB for initiative navigation
+          if (event.logicalKey == LogicalKeyboardKey.tab) {
+            final keys = HardwareKeyboard.instance.logicalKeysPressed;
+            final isShift = keys.contains(LogicalKeyboardKey.shiftLeft) ||
+                keys.contains(LogicalKeyboardKey.shiftRight);
+            if (isShift) {
+              widget.onPrevInInitiative?.call();
+            } else {
+              widget.onNextInInitiative?.call();
+            }
+            return KeyEventResult.handled;
+          }
+
+          // Element toggle F1..F6
+          final elem = _digitToElem[event.logicalKey];
+          if (elem == null) return KeyEventResult.ignored;
+
+          widget.onToggle(elem);
+          return KeyEventResult.handled;
+        },
+        child: widget.child,
+      ),
     );
   }
 }
